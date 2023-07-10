@@ -11,7 +11,7 @@ import {
   StripeTerminalProvider,
   useStripeTerminal,
 } from '@stripe/stripe-terminal-react-native';
-
+import axios from 'axios';
 import {StyleSheet, Text, useColorScheme, View} from 'react-native';
 import {PermissionsAndroid} from 'react-native';
 
@@ -46,6 +46,22 @@ function App(): JSX.Element {
             buttonPositive: 'Accept',
           },
         );
+        PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          {
+            title: 'BLUETOOTH_CONNECT Permission',
+            message: 'Stripe Terminal needs access to your BLUETOOTH_CONNECT',
+            buttonPositive: 'Accept',
+          },
+        );
+        PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          {
+            title: 'BLUETOOTH_CONNECT Permission',
+            message: 'Stripe Terminal needs access to your BLUETOOTH_CONNECT',
+            buttonPositive: 'Accept',
+          },
+        );
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
           console.log('You can use the Location');
         } else {
@@ -57,17 +73,19 @@ function App(): JSX.Element {
     }
     init();
   }, []);
+  async function fetchTokenProvider() {
+    const res = await axios
+      .get('https://testapi.mealzo.co.uk/api/v1/ConnectionToken')
+      .then(response => {
+        return response.data;
+      })
+      .catch(err => {
+        return err.response;
+      });
 
-  const fetchTokenProvider = async () => {
-    const response = await fetch(`{YOUR BACKEND URL}/connection_token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const {secret} = await response.json();
-    return secret;
-  };
+    return res;
+  }
+
   return (
     <StripeTerminalProvider
       logLevel="verbose"
